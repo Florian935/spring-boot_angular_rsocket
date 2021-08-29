@@ -17,7 +17,7 @@ import { ReactiveSocket, ISubscription } from 'rsocket-types';
     styleUrls: ['./request-stream.component.scss'],
 })
 export class RequestStreamComponent implements OnInit, OnDestroy {
-    client!: RSocketClient<any, Encodable>;
+    client!: RSocketClient<Product, Encodable>;
     products: Array<Product> = [];
 
     ngOnInit(): void {
@@ -26,7 +26,7 @@ export class RequestStreamComponent implements OnInit, OnDestroy {
     }
 
     private createRSocketClient(): void {
-        this.client = new RSocketClient<any, Encodable>({
+        this.client = new RSocketClient<Product, Encodable>({
             serializers: {
                 data: JsonSerializer,
                 metadata: IdentitySerializer,
@@ -47,7 +47,9 @@ export class RequestStreamComponent implements OnInit, OnDestroy {
 
     private connect(): void {
         this.client.connect().subscribe({
-            onComplete: (socket: ReactiveSocket<any, Encodable>) => {
+            onComplete: (
+                socket: ReactiveSocket<Product | string[], Encodable>
+            ) => {
                 socket
                     .requestStream({
                         data: ['1', '2', '4'],
@@ -55,7 +57,7 @@ export class RequestStreamComponent implements OnInit, OnDestroy {
                     })
                     .subscribe({
                         onNext: ({ data }) => {
-                            this.products = [...this.products, data];
+                            this.products = [...this.products, data as Product];
                         },
                         onComplete: () => {
                             console.log('complete');
