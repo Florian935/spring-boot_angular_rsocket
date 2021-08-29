@@ -54,7 +54,9 @@ export class RequestResponseComponent implements OnInit, OnDestroy {
                         metadata: this.getMetadata('request.response'),
                     })
                     .subscribe({
-                        onComplete: ({ data }) => (this.product = data),
+                        onComplete: ({ data }) => {
+                            this.product = data;
+                        },
                         onError: (error) => {
                             console.log(
                                 'Connection has been closed due to:: ' + error
