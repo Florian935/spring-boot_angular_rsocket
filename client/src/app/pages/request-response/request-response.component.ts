@@ -50,8 +50,8 @@ export class RequestResponseComponent implements OnInit, OnDestroy {
             onComplete: (socket: ReactiveSocket<Product, Encodable>) => {
                 socket
                     .requestResponse({
-                        data: { id: '123', label: 'Jean', price: 100 },
-                        metadata: this.getMetadata('request.response'),
+                        data: { label: 'Jean', price: 100 },
+                        metadata: this.getMetadata('request.response.1'),
                     })
                     .subscribe({
                         onComplete: ({ data }) => {

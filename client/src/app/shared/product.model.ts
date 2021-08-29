@@ -1,7 +1,5 @@
-export class Product {
-    constructor(
-        public id: string,
-        public label: string,
-        public price: number
-    ) {}
+export interface Product {
+    id?: string;
+    label: string;
+    price: number;
 }
