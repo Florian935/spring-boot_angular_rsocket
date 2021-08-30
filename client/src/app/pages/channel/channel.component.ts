@@ -25,7 +25,6 @@ export class ChannelComponent implements OnInit, OnDestroy {
     @ViewChild('channelButton', { static: true }) button?: ElementRef;
     client!: RSocketClient<any, any>;
     numbersSquared: Array<number> = [];
-    isConnected = false;
     flowable$ = new Flowable((subscriber) => {
         subscriber.onSubscribe({
             cancel: () => {},
@@ -65,7 +64,6 @@ export class ChannelComponent implements OnInit, OnDestroy {
     private connect(): void {
         this.client.connect().subscribe({
             onComplete: (socket: ReactiveSocket<any, any>) => {
-                this.isConnected = true;
                 socket
                     .requestChannel(
                         this.processor$.map((i) => {
