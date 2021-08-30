@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.List;
 
 import static java.time.Duration.ofSeconds;
@@ -45,5 +44,11 @@ public class ProductController {
                                 .price(100)
                                 .build()
                 );
+    }
+
+    @MessageMapping("channel")
+    Flux<Double> channelSquare(@Payload Flux<Double> integerToBeSquared) {
+
+        return integerToBeSquared.map(integer -> Math.pow(integer, 2));
     }
 }
