@@ -26,7 +26,7 @@ export class RequestStreamComponent implements OnInit, OnDestroy {
     }
 
     private createRSocketClient(): void {
-        this.client = new RSocketClient<Product, Encodable>({
+        this.client = new RSocketClient({
             serializers: {
                 data: JsonSerializer,
                 metadata: IdentitySerializer,
