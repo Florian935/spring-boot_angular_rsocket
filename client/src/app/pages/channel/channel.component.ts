@@ -1,29 +1,45 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+    Component,
+    ElementRef,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+} from '@angular/core';
 import {
     APPLICATION_JSON,
-    Encodable,
     IdentitySerializer,
     JsonSerializer,
     MESSAGE_RSOCKET_ROUTING,
     RSocketClient,
 } from 'rsocket-core';
-import RSocketWebSocketClient from 'rsocket-websocket-client';
-import { Product } from 'src/app/shared/product.model';
-import { ReactiveSocket, ISubscription } from 'rsocket-types';
 import { Flowable, FlowableProcessor } from 'rsocket-flowable';
+import { ISubscription, Payload, ReactiveSocket } from 'rsocket-types';
+import RSocketWebSocketClient from 'rsocket-websocket-client';
+import { fromEvent } from 'rxjs';
 @Component({
     selector: 'app-channel',
     templateUrl: './channel.component.html',
     styleUrls: ['./channel.component.scss'],
 })
 export class ChannelComponent implements OnInit, OnDestroy {
+    @ViewChild('channelButton', { static: true }) input?: ElementRef;
     client!: RSocketClient<any, any>;
     numbersSquared: Array<number> = [];
-    processor = new FlowableProcessor(new Flowable((sub) => {}));
+    isConnected = false;
+    flowable$ = new Flowable((subscriber) => {
+        subscriber.onSubscribe({
+            cancel: () => {},
+            request: () => {},
+        });
+    });
+    processor$ = new FlowableProcessor(this.flowable$);
 
     ngOnInit(): void {
         this.createRSocketClient();
         this.connect();
+        fromEvent(this.input?.nativeElement, 'click').subscribe((value) => {
+            this.processor$.onNext((value as PointerEvent).clientX);
+        });
     }
 
     private createRSocketClient(): void {
@@ -49,22 +65,15 @@ export class ChannelComponent implements OnInit, OnDestroy {
     private connect(): void {
         this.client.connect().subscribe({
             onComplete: (socket: ReactiveSocket<any, any>) => {
+                this.isConnected = true;
                 socket
                     .requestChannel(
-                        Flowable.just(
-                            {
-                                data: 1,
+                        this.processor$.map((i) => {
+                            return {
+                                data: i,
                                 metadata: this.getMetadata('channel'),
-                            },
-                            {
-                                data: 2,
-                                metadata: this.getMetadata('channel'),
-                            },
-                            {
-                                data: 3,
-                                metadata: this.getMetadata('channel'),
-                            }
-                        )
+                            };
+                        }) as Flowable<Payload<any, any>>
                     )
                     .subscribe({
                         onNext: ({ data }) => {
@@ -82,7 +91,7 @@ export class ChannelComponent implements OnInit, OnDestroy {
                             );
                         },
                         onSubscribe: (subscription: ISubscription) => {
-                            subscription.request(1000000);
+                            subscription.request(100000);
                         },
                     });
             },
