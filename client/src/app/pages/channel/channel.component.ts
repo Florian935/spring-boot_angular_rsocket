@@ -13,7 +13,12 @@ import {
     RSocketClient,
 } from 'rsocket-core';
 import { Flowable, FlowableProcessor } from 'rsocket-flowable';
-import { ISubscription, Payload, ReactiveSocket } from 'rsocket-types';
+import {
+    Encodable,
+    ISubscription,
+    Payload,
+    ReactiveSocket,
+} from 'rsocket-types';
 import RSocketWebSocketClient from 'rsocket-websocket-client';
 import { fromEvent } from 'rxjs';
 @Component({
@@ -23,7 +28,7 @@ import { fromEvent } from 'rxjs';
 })
 export class ChannelComponent implements OnInit, OnDestroy {
     @ViewChild('channelButton', { static: true }) button?: ElementRef;
-    client!: RSocketClient<any, any>;
+    client!: RSocketClient<number, Encodable>;
     numbersSquared: Array<number> = [];
     flowable$ = new Flowable((subscriber) => {
         subscriber.onSubscribe({
@@ -42,7 +47,7 @@ export class ChannelComponent implements OnInit, OnDestroy {
     }
 
     private createRSocketClient(): void {
-        this.client = new RSocketClient<any, any>({
+        this.client = new RSocketClient({
             serializers: {
                 data: JsonSerializer,
                 metadata: IdentitySerializer,
@@ -63,7 +68,7 @@ export class ChannelComponent implements OnInit, OnDestroy {
 
     private connect(): void {
         this.client.connect().subscribe({
-            onComplete: (socket: ReactiveSocket<any, any>) => {
+            onComplete: (socket: ReactiveSocket<number, Encodable>) => {
                 socket
                     .requestChannel(
                         this.processor$.map((i) => {
@@ -71,13 +76,13 @@ export class ChannelComponent implements OnInit, OnDestroy {
                                 data: i,
                                 metadata: this.getMetadata('channel'),
                             };
-                        }) as Flowable<Payload<any, any>>
+                        }) as Flowable<Payload<number, Encodable>>
                     )
                     .subscribe({
                         onNext: ({ data }) => {
                             this.numbersSquared = [
                                 ...this.numbersSquared,
-                                data,
+                                data as number,
                             ];
                         },
                         onComplete: () => {
@@ -96,7 +101,7 @@ export class ChannelComponent implements OnInit, OnDestroy {
             onError: (error) => {
                 console.log('Connection has been refused due to:: ' + error);
             },
-            onSubscribe: (cancel) => {
+            onSubscribe: () => {
                 console.log('Subcribed successfully !');
             },
         });
@@ -107,8 +112,6 @@ export class ChannelComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        if (this.client) {
-            this.client.close();
-        }
+        this.client.close();
     }
 }
