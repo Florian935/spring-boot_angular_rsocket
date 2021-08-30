@@ -22,7 +22,7 @@ import { fromEvent } from 'rxjs';
     styleUrls: ['./channel.component.scss'],
 })
 export class ChannelComponent implements OnInit, OnDestroy {
-    @ViewChild('channelButton', { static: true }) input?: ElementRef;
+    @ViewChild('channelButton', { static: true }) button?: ElementRef;
     client!: RSocketClient<any, any>;
     numbersSquared: Array<number> = [];
     isConnected = false;
@@ -37,7 +37,7 @@ export class ChannelComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.createRSocketClient();
         this.connect();
-        fromEvent(this.input?.nativeElement, 'click').subscribe((value) => {
+        fromEvent(this.button?.nativeElement, 'click').subscribe((value) => {
             this.processor$.onNext((value as PointerEvent).clientX);
         });
     }
